@@ -1,0 +1,1 @@
+(while :; do cat input||exit; done)|perl -nle'eval "\$x=\$x$_";die "the answer is $x" if ++$h{$x} > 1'

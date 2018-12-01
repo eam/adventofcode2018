@@ -1,0 +1,1 @@
+perl -nle'eval "\$x=\$x$_";END{print $x}' < input

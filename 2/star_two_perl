@@ -1,0 +1,14 @@
+#!/usr/bin/perl -wl
+
+use warnings;
+use strict;
+
+my @lines = <>;
+
+for my $line (@lines) {
+  for my $inner (@lines) {
+    my $diff = $line ^ $inner;
+    my $count = $diff =~ tr/\c@//;
+    die "line $line inner $inner" if $count == 26;
+  }
+}

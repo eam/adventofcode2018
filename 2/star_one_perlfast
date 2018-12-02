@@ -1,0 +1,1 @@
+<input perl -F// -anwle'%h=(); $h{$_}++ for @F; $two++ if grep {$_ == 2} values %h; $three++ if grep {$_ == 3} values %h;END{print "two: $two; three: $three; cksum: " . ($two * $three)}'

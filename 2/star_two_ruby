@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+require 'xorcist'
+include Xorcist 
+
+Encoding.default_external = Encoding::ASCII_8BIT
+lines = STDIN.readlines
+
+lines.each do |line|
+  lines.each do |inner|
+    diff = xor line, inner
+    count = diff.tr("\x00", '').length
+    raise "line #{line} inner #{inner}" if count == 1
+  end
+end

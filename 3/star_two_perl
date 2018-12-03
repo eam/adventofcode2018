@@ -1,0 +1,30 @@
+#!/usr/bin/perl -wl
+
+use warnings;
+use strict;
+
+my $fabric = [];
+my $count = 0;
+#1 @ 755,138: 26x19
+my @lines = <>;
+for my $line (@lines) {
+  my ($id, $x, $y, $w, $h) = $line =~ m/#(\d+) @ (\d+),(\d+): (\d+)x(\d+)/ or die "bad input: $line";
+  for my $i (0..($w-1)) {
+    for my $j (0..($h-1)) {
+#      print "id: $id, filling " . ($x + $i) . ", ". ($y + $j);
+      $count++ if (++$fabric->[$x + $i]->[$y + $j] == 2);
+    }
+  }
+}
+
+LINE: for my $line (@lines) {
+  my ($id, $x, $y, $w, $h) = $line =~ m/#(\d+) @ (\d+),(\d+): (\d+)x(\d+)/ or die "bad input: $line";
+  for my $i (0..($w-1)) {
+    for my $j (0..($h-1)) {
+      next LINE if $fabric->[$x + $i]->[$y + $j] > 1;
+    }
+  }
+  die "id $id has no overlap";
+}
+
+print $count;

@@ -1,0 +1,37 @@
+#!/usr/bin/perl -wl
+
+use warnings;
+use strict;
+
+sub swap_case {
+  my ($char) = @_;
+  if ($char =~ /[A-Z]/) { lc $char } else { uc $char }
+}
+
+sub reduce {
+  my ($polymer) = @_;
+  my $old_polymer = "";
+  until ($polymer eq $old_polymer) {
+    $old_polymer = $polymer;
+    $polymer =~ s/(.)(??{swap_case $1})//g;
+  }
+  return length $polymer;
+}
+my $line=<>;
+chomp $line;
+#$line = "dabAcCaCBAcCcaDA";
+print  "starting len " . length $line;
+my $smallest_len = length $line;
+my $smallest_letter;
+for my $l ("a".."z") {
+  my $working_polymer = $line;
+  my $uc = uc $l;
+  $working_polymer =~ s/$l|$uc//g;
+  my $len = reduce $working_polymer;
+  print "doing letter: $l len $len";
+  if ($len < $smallest_len) {
+    $smallest_len = $len;
+    $smallest_letter = $l;
+  }
+}
+print "letter $smallest_letter, length $smallest_len";

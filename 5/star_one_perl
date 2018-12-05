@@ -1,0 +1,18 @@
+#!/usr/bin/perl -wl
+
+use warnings;
+use strict;
+use bytes;
+
+sub swap_case {
+  my ($char) = @_;
+  if ($char =~ /[A-Z]/) { lc $char } else { uc $char }
+}
+my $line=<>;
+chomp $line;
+my $old_line = "";
+until ($line eq $old_line) {
+  $old_line = $line;
+  $line =~ s/(.)(??{swap_case $1})//g;
+}
+print length $line;

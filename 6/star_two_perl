@@ -1,0 +1,44 @@
+#!/usr/bin/perl -w
+
+use warnings;
+use strict;
+use Data::Dumper;
+
+my @lines = <>;
+
+chomp @lines;
+my $id=0;
+my @coords = map { { x=> [split ", "]->[0] + 0, y=>[split ", "]->[1] + 0, grid=>[], id=>$id++ } } @lines;
+my ($bounding_x) = reverse sort {$a <=> $b}  map {$_->{x}} @coords;
+my ($bounding_y) = reverse sort {$a <=> $b}  map {$_->{y}} @coords;
+
+print "biggest ($bounding_x) ,$bounding_y\n";
+
+#$bounding_x = 1000;
+#$bounding_y = 1000;
+
+sub travel_cost {
+  my ($x, $y, $dx, $dy) = @_;
+  return abs($x - $dx) + abs($y - $dy);
+}
+
+sub distance_to_all {
+  my ($x, $y, $coords) = @_;
+  my $sum = 0;
+  for my $coord (@$coords) {
+    $sum += travel_cost($x, $y, $coord->{x}, $coord->{y});
+  }
+  return $sum;
+}
+
+my $master_grid = [];
+my $master_area = 0;
+for my $i (0..$bounding_x) {
+  for my $j (0..$bounding_y) {
+    if (distance_to_all($i, $j, \@coords) < 10000) {
+      $master_area++;
+    }
+  }
+}
+
+print $master_area."\n";

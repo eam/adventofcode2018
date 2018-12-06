@@ -1,0 +1,100 @@
+#!/usr/bin/perl -w
+
+use warnings;
+use strict;
+use Data::Dumper;
+
+my @lines = <>;
+
+chomp @lines;
+my $id=0;
+my @coords = map { { x=> [split ", "]->[0] + 0, y=>[split ", "]->[1] + 0, grid=>[], id=>$id++ } } @lines;
+my ($bounding_x) = reverse sort {$a <=> $b}  map {$_->{x}} @coords;
+my ($bounding_y) = reverse sort {$a <=> $b}  map {$_->{y}} @coords;
+
+print "biggest ($bounding_x) ,$bounding_y\n";
+
+sub travel_cost {
+  my ($x, $y, $dx, $dy) = @_;
+  return abs($x - $dx) + abs($y - $dy);
+}
+
+my @id2chr = ("a".."z","A".."Z");
+$id2chr[999] = "!";
+
+sub print_grid {
+  my ($grid, $bounding_x, $bounding_y) = @_;
+  for my $y (0..$bounding_y) {
+    for my $x (0..$bounding_x) {
+      print $id2chr[ $grid->[$x][$y] ];
+    }
+    print "\n";
+  }
+}
+
+foreach my $coord (@coords) {
+  for my $i (0..$bounding_x) {
+    for my $j (0..$bounding_y) {
+      $coord->{grid}[$i][$j] = travel_cost($coord->{x}, $coord->{y}, $i, $j);
+    }
+  }
+}
+#print Dumper \@coords;
+
+# now for each grid, pick the winner and nul ties
+
+my $master_grid = [];
+for my $i (0..$bounding_x) {
+  for my $j (0..$bounding_y) {
+    my @coord_costs = sort { $a->[1] <=> $b->[1] }
+                      map { [$_->{id}, travel_cost($_->{x}, $_->{y}, $i, $j)] }
+                      @coords;
+    if ($coord_costs[0][1] == $coord_costs[1][1]) {
+      # tie
+      $master_grid->[$i][$j] = 999; #"TIE ($coord_costs[0][0] and $coord_costs[1][0])";
+    } else {
+      $master_grid->[$i][$j] = $coord_costs[0][0]; # id of closest coord
+    }
+  }
+}
+
+#print Dumper $master_grid;
+print_grid $master_grid, $bounding_x, $bounding_y;
+
+sub is_edge {
+  my ($x, $y, $bounding_x, $bounding_y) = @_;
+  return 1 if 0 == $x;
+  return 1 if 0 == $y;
+  return 1 if $bounding_x == $x;
+  return 1 if $bounding_y == $y;
+  return 0;
+}
+
+# count each by id
+# if touching an edge, disqualify
+my %disqualified;
+my %score;
+
+for my $i (0..$bounding_x) {
+  for my $j (0..$bounding_y) {
+    if (is_edge($i, $j, $bounding_x, $bounding_y)) {
+      $disqualified{$master_grid->[$i][$j]}++;
+    }
+    $score{$master_grid->[$i][$j]}++
+  }
+}
+
+print "disqual:\n";
+print Dumper \%disqualified;
+
+for my $k (keys %disqualified) {
+  delete $score{$k};
+}
+
+print "score:\n";
+print Dumper \%score;
+print "id of 35 is $id2chr[35]\n";
+
+#sub bfs {
+#  my ($grid, $x, $y) = 
+#}

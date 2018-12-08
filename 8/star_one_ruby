@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+
+line = STDIN.gets.chomp
+data = line.split(/\s+/).map { |e| e.to_i }
+
+def parse_entry(data, metadata)
+  child_count = data.shift
+  metadata_count = data.shift
+  child_count.times {
+    parse_entry(data, metadata)
+  }
+  metadata_count.times {
+    metadata << data.shift
+  }
+end
+
+metadata = []
+parse_entry data, metadata
+puts metadata.inject(:+)

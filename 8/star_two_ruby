@@ -1,0 +1,65 @@
+#!/usr/bin/env ruby
+
+class Node
+  @@id = 0
+  @@metamap = {}
+  @@sum_cache = {}
+  attr_accessor :metadata
+  attr_accessor :children
+  def initialize
+    @id = @@id
+    @@metamap[@id] = self
+    @@id += 1
+  end
+  def sum
+    return @@sum_cache[@id] if @@sum_cache.has_key? @id
+    sum = 0
+    #puts "summing node #{@id} children: #{children.length}"
+    if children.length.zero?
+      sum = metadata.inject(:+)
+      puts "id #{@id} meta: #{metadata} ZERO sum: #{sum}"
+      exit! if @id == 385
+      @@sum_cache[@id] = sum
+    else
+      #puts "id: #{@id}; child len: #{children.length}; meta: #{metadata}"
+      sum = metadata.map { |i|
+        if i == 0
+          0
+        else
+          children[i - 1].sum rescue 0
+        end
+      }.inject(:+)
+      @@sum_cache[@id] = sum
+    end
+    puts "node #{@id} sum #{sum}"
+    return sum
+  end
+end
+
+line = STDIN.gets.chomp
+data = line.split(/\s+/).map { |e| e.to_i }
+
+def parse_entry(data)
+  child_count = data.shift
+  metadata_count = data.shift
+  metadata = []
+  children = []
+  child_count.times {
+    children << parse_entry(data)
+  }
+  metadata_count.times {
+    metadata << data.shift
+  }
+  n = Node.new
+  n.children = children
+  n.metadata = metadata
+  n
+end
+
+metadata = []
+n = parse_entry data
+#puts metadata.inject(:+)
+#puts n.inspect
+#puts "hi"
+puts n.sum
+

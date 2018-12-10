@@ -1,0 +1,102 @@
+#!/usr/bin/env ruby
+
+
+class Sky
+  attr_reader :second
+  def initialize
+    @points = []
+    @second = 0
+    load_from_stdin!
+  
+  end
+  def load_from_stdin!
+    STDIN.each_line { |l|
+      l =~ /position=<\s*([-\d]+),\s*([-\d]+)> velocity=<\s*([-\d]+),\s*([-\d]+)>/ or raise "bad input: #{l}"
+      @points << { x: $1.to_i, y: $2.to_i, vx: $3.to_i, vy: $4.to_i}
+    }
+  end
+
+  def update
+    @points.each { |p| 
+      p[:x] += p[:vx]
+      p[:y] += p[:vy]
+    }
+    @second += 1
+  end
+
+  def ydiff
+    y_min = @points.map { |p| p[:y]}.sort.first
+    y_max = @points.map { |p| p[:y]}.sort.last
+    (y_min - y_max).abs
+  end
+
+  def points_aligned
+    y_min = @points.map { |p| p[:y]}.sort.first
+    y_max = @points.map { |p| p[:y]}.sort.last
+    puts "s: #{@second} ydiff: #{ydiff}"
+  end
+
+  def print_sky
+    sky = []
+
+    x_min = @points.map { |p| p[:x]}.sort.first
+    x_max = @points.map { |p| p[:x]}.sort.last
+    y_min = @points.map { |p| p[:y]}.sort.first
+    y_max = @points.map { |p| p[:y]}.sort.last
+    x_offset = x_min < 0 ? x_min.abs : -x_min.abs
+    y_offset = y_min < 0 ? y_min.abs : -y_min.abs
+
+    @points.each {|p| sky[ p[:y] + y_offset] ||= []; sky[ p[:y] + y_offset][ p[:x] + x_offset ] = "#" }
+
+    sky.each { |row|
+      if row.nil?
+        puts "." * (x_max + x_offset + 1)
+        next
+      end
+      row.each { |c|
+        c ||= "."
+        print c
+      }
+      puts "." * (x_max + x_offset + 1 - row.length)
+    }
+
+    # get boundaries of sky, create array, iterate x,y and mark points then print array
+
+    #point_map = {}
+    #@points.each {|p| point_mapp[:x]}
+
+#    puts "sky box: [ #{x_min}, #{x_max} ], [ #{y_min, #{y_max} ]"
+#    (y_min..y_max).each { |y|
+##      (x_min..x_max).each { |x|
+#        print 
+#      }
+#    }
+#    @points.each { |p|
+#    }
+  end
+end
+
+s = Sky.new
+
+s.load_from_stdin!
+
+#5.times {
+#s.print_sky
+#s.points_aligned
+#s.update
+#puts
+#}
+
+last_ydiff = 0
+loop {
+  s.points_aligned
+  # find second where points no longer converge on y
+  #break if last_ydiff < s.ydiff && last_ydiff != 0
+  #last_ydiff = s.ydiff
+  s.update
+  if s.second == 10454
+    s.print_sky
+    break
+  end
+}
+

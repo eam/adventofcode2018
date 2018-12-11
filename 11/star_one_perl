@@ -1,0 +1,102 @@
+#!/usr/bin/perl
+
+use warnings;
+use strict;
+use feature 'say';
+use Data::Dumper;
+
+my $serial = 7803;
+
+my $grid = [];
+
+sub rack_id {
+  my ($x) = @_;
+  return $x + 10
+}
+
+sub hundreds_digit {
+  int($_[0] % 1000 / 100)
+}
+
+sub grid_val {
+  my ($x, $y, $serial) = @_;
+  my $result = rack_id($x); # rack id
+  $result *= $y;
+  $result += $serial;
+  $result *= rack_id($x);
+  $result = hundreds_digit $result;
+  $result -= 5;
+}
+
+sub sum_three {
+  my ($x, $y) = @_;
+  die "oob ($x, $y)" if $x > 298 or $y > 298;
+  die "oob ($x, $y)" if $x < 1 or $y < 1;
+  my $sum = 0;
+  for my $i ($x..($x + 2)) {
+    for my $j ($y..($y + 2)) {
+      $sum += $grid->[$i][$j];
+    }
+  }
+  return $sum;
+}
+
+sub sum_n {
+  my ($x, $y, $n) = @_;
+  die "oob ($x, $y)" if $x + $n > 300 or $y + $n > 300;
+  die "oob ($x, $y)" if $x < 1 or $y < 1;
+  my $sum = 0;
+  for my $i ($x..($x + $n)) {
+    for my $j ($y..($y + $n)) {
+      $sum += $grid->[$i][$j];
+    }
+  }
+  return $sum;
+}
+
+sub print_three {
+  my ($x, $y) = @_;
+  for my $j ($y..($y + 2)) {
+    for my $i ($x..($x + 2)) {
+      #print $grid->[$i][$j];
+      print sprintf " %+ d", $grid->[$i][$j];
+    }
+    print "\n";
+  }
+}
+
+sub print_n {
+  my ($x, $y, $n) = @_;
+  for my $j ($y..($y + $n)) {
+    for my $i ($x..($x + $n)) {
+      #print $grid->[$i][$j];
+      print sprintf " %+ d", $grid->[$i][$j];
+    }
+    print "\n";
+  }
+}
+
+say grid_val(122,79, 57);
+say grid_val 217,196, 39;
+say grid_val 101,153, 71;
+
+for my $i (1..300) {
+  for my $j (1..300) {
+    $grid->[$i][$j] = grid_val($i, $j, $serial)
+  }
+}
+print_three(1,1);
+
+my $biggest = [0,0,0];
+for my $i (1..298) {
+  for my $j (1..298) {
+    # print sprintf " %+ d", $grid->[$i][$j];
+    my $sum = sum_three $i, $j;
+    say "($i, $j): $sum";
+    $biggest = [$i, $j, $sum] if $biggest->[2] < $sum;
+  }
+  #print "\n";
+}
+
+print Dumper $biggest;
+print_three($biggest->[0], $biggest->[1])

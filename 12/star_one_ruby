@@ -1,0 +1,61 @@
+#!/usr/bin/ruby
+
+
+class Plants
+  def initialize
+    first_line = STDIN.gets
+    first_line =~ /initial state: (\S+)/ or raise "bad input initial state"
+    @current_state = $1
+    @current_state = ("." * 10) + @current_state + ("." * 10)
+    STDIN.gets
+    @rules = {}
+    STDIN.each_line { |l|
+      l =~ /([.#]{5}) => ([.#])/ or raise "bad input transform"
+      @rules[$1] = $2
+    }
+    @states = []
+    @states << @current_state
+  end
+
+  def sum_current_state
+    sum = 0
+    @current_state.each_char.with_index { |c, i|
+    puts "char #{c} index #{i} adj index #{i - 10}"
+      if c == "#"
+        sum += (i - 10)
+      end
+    }
+    sum
+  end
+  
+  def print_state
+      puts "    "  + (" " * 10) + "0"
+    @states.each_with_index { |s, i|
+      puts "    "  + (" " * 10) + "0"
+      puts "#{sprintf "%2d", i}: #{s}"
+    }
+  end
+
+  def next_state
+    new_state = @current_state.dup
+    @current_state.each_char.with_index { |c, i| 
+      next if i < 3
+      section = @current_state[i - 2, 5]
+      puts "looking at #{@current_state[i - 2, 5]}  "
+      puts "transform exists" if @rules.has_key? section
+      if @rules.has_key? section
+        new_state[i] = @rules[section]
+      end
+    }
+    new_state += "....." if new_state[-5, 5] =~ /#/
+    @states << new_state
+    @current_state = new_state
+  end
+
+end
+
+p = Plants.new
+p.print_state
+20.times { p.next_state }
+p.print_state
+puts p.sum_current_state

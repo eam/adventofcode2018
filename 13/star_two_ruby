@@ -1,0 +1,194 @@
+#!/usr/bin/env ruby
+
+class Track
+  @@valid_track = {
+   "|" => true,
+   "-" => true,
+   "+" => true,
+   "/" => true,
+   "\\" => true,
+  }
+  def initialize
+    @world = STDIN.readlines
+    @world = @world.map &:chomp
+    @world = @world.map {|l| l.each_char.to_a}
+    @ticks = 0
+    @crashed_carts = {}
+
+    # remove carts into @carts
+    @carts = []
+    @world.each_with_index { |yo, y|
+      yo.each_with_index { |xo, x|
+        case @world[y][x]
+        when "v"
+          @world[y][x] = "|"
+          @carts << Cart.new(x, y, :down)
+        when "^"
+          @world[y][x] = "|"
+          @carts << Cart.new(x, y, :up)
+        when ">"
+          @world[y][x] = "-"
+          @carts << Cart.new(x, y, :right)
+        when "<"
+          @world[y][x] = "-"
+          @carts << Cart.new(x, y, :left)
+        end
+      }
+    }
+  end
+  def print_world
+    puts "we have #{@carts.length} carts"
+    cart_map = []
+    @carts.each { |c|
+      cart_map[c.y] ||= []
+      cart_map[c.y][c.x] = c
+    }
+    @world.each_with_index { |yo, y|
+      yo.each_with_index { |xo, x|
+        if cart_map[y] and cart_map[y][x]
+          print cart_map[y][x].facing_char
+        else
+          print xo
+        end
+      }
+      puts "Z"
+    }
+    puts "ZZZZZZZZZZZZZZ"
+  end
+
+  def tick
+    if @carts.length < 2
+      puts "the last cart is at"
+          puts "last cart at #{@carts.first.x} #{@carts.first.y} tick #{@ticks}"
+          raise "all done, "
+    end
+    # sort carts for processing order
+    sorted_carts = @carts.sort_by { |c| [c.y, c.x] }
+    #sorted_carts.each { |c|
+    #  puts "cart: #{c.x}, #{c.y}"
+    #}
+    # for each cart, update position and check for crash
+    sorted_carts.each { |c|
+      next if @crashed_carts.has_key? c.id # we already removed this one
+      save_cart = c.dup
+      c.move
+      if invalid? c.x, c.y
+        puts "crash! at turn #{@ticks} position #{c.x}, #{c.y}"
+        puts "character is: #{@world[c.y][c.x]}"
+        if @carts.length == 1 or @carts.length == 0
+          puts "last cart id #{@carts.first.id} at #{@carts.first.x} #{@carts.first.y} tick #{@ticks}"
+          @carts.first.move
+puts "after move"
+          puts "last cart id #{@carts.first.id} at #{@carts.first.x} #{@carts.first.y} tick #{@ticks}"
+
+          raise "all done, "
+        end
+        next
+        #raise "all done"
+      end
+      # if we're on an intersection, turn heading
+      case @world[c.y][c.x]
+      when "\\"
+        c.corner_turn "\\"
+      when "/"
+        c.corner_turn "/"
+      when "+"
+        c.intersection_turn
+      end
+    }
+    @ticks += 1
+  end
+
+  # is this location invalid for a cart?
+  def invalid? x, y
+    # world xy must be track
+    raise "ran off the track" unless @@valid_track.has_key? @world[y][x]
+    # exactly one cart may (must) have these coords
+    overlapping_carts = @carts.select {|c| c.x == x and c.y == y}
+    if overlapping_carts.length != 1
+      puts "we have the following overlapping carts: (count = #{overlapping_carts.length})"
+      overlapping_carts.each { |c|
+        puts "id: #{c.id} x,y: #{c.x},#{c.y}"
+        @crashed_carts[c.id] = c
+        @carts.delete c
+        puts "we have #{@carts.length} carts after deletion"
+      }
+      return true
+    end
+    return false
+  end
+
+end
+
+class Cart
+  attr_reader :x, :y, :facing, :id
+  @@turn_map = [:left, :straight, :right]
+  @@facing_char_map = { up: "^", down: "v", left: "<", right: ">"}
+  @@slash_turn_map = { up: :right, down: :left, left: :down, right: :up} # /
+  @@backslash_turn_map = {up: :left, down: :right, left: :up, right: :down} # \
+  @@left_turn_map = {up: :left, down: :right, left: :down, right: :up}
+  @@right_turn_map = {up: :right, down: :left, left: :up, right: :down}
+  @@next_cart_id = 0
+
+  def initialize x, y, facing
+    @x = x
+    @y = y
+    @facing = facing # :up :down :left :right
+    @intersection_turn_counter = 0 # mod 3 index into @@turn_map then increment each turn
+    @id = @@next_cart_id
+    @@next_cart_id += 1
+  end
+
+  def facing_char
+    @@facing_char_map[@facing]
+  end
+
+  def intersection_turn
+    direction = @@turn_map[@intersection_turn_counter % 3]
+    @intersection_turn_counter += 1
+    case direction
+    when :left
+      puts "went left"
+      @facing = @@left_turn_map[@facing]
+    when :right
+      puts "went right"
+      @facing = @@right_turn_map[@facing]
+    when :straight
+      puts "went straight"
+    else 
+      raise "invalid intersection turn heading #{direction}"
+    end
+    # don't turn for straight
+  end
+
+  def corner_turn c
+    case c
+    when "\\"
+      @facing = @@backslash_turn_map[@facing]
+    when "/"
+      @facing = @@slash_turn_map[@facing]
+    end
+  end
+
+  def move
+    case @facing
+    when :up
+      @y += -1
+    when :down
+      @y += 1
+    when :left
+      @x += -1
+    when :right
+      @x += 1
+    else
+      raise "impossible facing: #{@facing}"
+    end
+    # check for crash
+  end
+end
+
+
+t = Track.new
+
+t.print_world
+loop { t.tick }

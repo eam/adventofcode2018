@@ -1,0 +1,116 @@
+#!/usr/bin/env ruby
+
+
+#recipe = [2, 8, 6, 0, 5, 1]
+#recipe = [3,7]
+recipe = Array.new(10_000_000)
+recipe[0] = 3
+recipe[1] = 7
+length = 2
+
+elfa = 0
+elfb = 1
+
+def digits_of_sum recipe, elfa, elfb
+   sum = recipe[elfa] + recipe[elfb]
+   return [0] if sum == 0
+   digits = []
+   while sum > 0
+     digits.unshift sum % 10
+     sum /= 10
+   end
+   digits
+end
+def append_digits_of_sum recipe, length, elfa, elfb
+   sum = recipe[elfa] + recipe[elfb]
+   if sum < 10
+     recipe[length] = sum
+     length += 1
+   else
+     recipe[length] = sum / 10
+     recipe[length + 1] = sum % 10 
+     length += 2
+   end
+   length
+end
+
+def print_recipe recipe, elfa, elfb
+  puts "elfa #{elfa} elfb #{elfb}"
+  puts " " + (" " * (3 * elfa)) + "A"
+  puts " " + (" " * (3 * elfb)) + "B"
+  puts recipe.inspect
+end
+
+def print_recipe_at recipe, after, len
+  puts recipe[after,len].inspect
+end
+
+#print_recipe recipe, elfa, elfb
+
+#end_condition = [5,1,5,8,9]
+#end_condition = [0,1,2,4,5]
+#end_condition = [9,2,5,1,0]
+#end_condition = [5,9,4,1,4]
+end_condition = [2, 8, 6, 0, 5, 1]
+puts "starting loop"
+#while length < 200000
+loop do
+  length = append_digits_of_sum(recipe, length, elfa, elfb)
+  if recipe[length - 1] == 1
+    if recipe[length - 2] == 5
+      if recipe[length - 3] == 0
+        if recipe[length - 4] == 6
+          if recipe[length - 5] == 8
+            if recipe[length - 6] == 2 
+              puts "found end condition at recipe scoreboard len #{length - end_condition.length}"
+              raise
+            end
+          end
+        end
+      end
+    end
+  end
+  if recipe[length - 2] == 1
+    if recipe[length - 3] == 5
+      if recipe[length - 4] == 0
+        if recipe[length - 5] == 6
+          if recipe[length - 6] == 8
+            if recipe[length - 7] == 2 
+              puts "found end condition at recipe scoreboard len #{length - end_condition.length - 1}"
+              raise
+            end
+          end
+        end
+      end
+    end
+  end
+
+#  if recipe[length - eclength,eclength] == end_condition 
+#  end
+#  if recipe[length - (end_condition.length + 1),end_condition.length] == end_condition
+#    puts "found end condition at recipe scoreboard len #{length - end_condition.length - 1}"
+#    raise
+#  end
+#  end
+  elfa = (elfa + (1 + recipe[elfa])) % length
+  elfb = (elfb + (1 + recipe[elfb])) % length
+  #print_recipe recipe, elfa, elfb
+  if length % 10000 == 0
+    puts length
+  end
+end
+puts "answers"
+#print_recipe recipe, elfa, elfb
+puts
+puts "made #{length} recipies"
+
+puts "9, 10"
+print_recipe_at recipe, 9, 10
+puts "5, 10"
+print_recipe_at recipe, 5, 10
+#puts "18, 10"
+#print_recipe_at recipe, 18, 10
+#puts "2018, 10"
+#print_recipe_at recipe, 2018, 10
+
+print_recipe_at recipe, 286051, 10

@@ -1,0 +1,58 @@
+#!/usr/bin/env ruby
+
+
+#recipe = [2, 8, 6, 0, 5, 1]
+recipe = [3,7]
+
+elfa = 0
+elfb = 1
+
+def digits_of_sum recipe, elfa, elfb
+   sum = recipe[elfa] + recipe[elfb]
+   return [0] if sum == 0
+   digits = []
+   while sum > 0
+     digits << sum % 10
+     sum /= 10
+   end
+   digits.reverse
+end
+
+def print_recipe recipe, elfa, elfb
+  puts "elfa #{elfa} elfb #{elfb}"
+  puts " " + (" " * (3 * elfa)) + "A"
+  puts " " + (" " * (3 * elfb)) + "B"
+  puts recipe.inspect
+end
+
+def print_recipe_at recipe, after, len
+  puts recipe[after,len].inspect
+end
+
+print_recipe recipe, elfa, elfb
+
+#recipe += digits_of_sum(recipe, elfa, elfb)
+#elfa = elfa + (1 + recipe[elfa]) % recipe.length
+#elfb = elfb + (1 + recipe[elfb]) % recipe.length
+#print_recipe recipe, elfa, elfb
+while recipe.length < 286065
+  recipe += digits_of_sum(recipe, elfa, elfb)
+  elfa = (elfa + (1 + recipe[elfa])) % recipe.length
+  elfb = (elfb + (1 + recipe[elfb])) % recipe.length
+  #print_recipe recipe, elfa, elfb
+end
+puts "answers"
+print_recipe recipe, elfa, elfb
+puts
+puts "made #{recipe.length} recipies"
+
+puts "9, 10"
+print_recipe_at recipe, 9, 10
+puts "5, 10"
+print_recipe_at recipe, 5, 10
+#puts "18, 10"
+#print_recipe_at recipe, 18, 10
+#puts "2018, 10"
+#print_recipe_at recipe, 2018, 10
+
+print_recipe_at recipe, 286051, 10
